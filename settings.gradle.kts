@@ -42,7 +42,7 @@ dependencyResolutionManagement {
             version("api-client", "2.2.0")
             version("http-client", "1.43.3")
             version("http-auth", "1.20.0")
-            version("guava", "31.1-jre")
+            version("guava", "32.1.3-jre")
 
             library("agp", "com.android.tools.build", "gradle").versionRef("agp")
             library("agp-test", "com.android.tools.build", "builder-test-api").versionRef("agp")
@@ -63,7 +63,7 @@ dependencyResolutionManagement {
 
         create("testLibs") {
             version("junit", "5.10.1")
-            version("truth", "1.1.3")
+            version("truth", "1.1.5")
             version("mockito", "5.8.0")
 
             library("junit", "org.junit.jupiter", "junit-jupiter-api").versionRef("junit")
