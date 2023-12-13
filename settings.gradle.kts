@@ -37,7 +37,7 @@ dependencyResolutionManagement {
                 .versionRef("nexusPublish")
 
             version("agp", "8.2.0")
-            version("agp-tools", "31.0.1")
+            version("agp-tools", "31.2.0")
             version("android-publisher", "v3-rev20231115-2.0.0")
             version("api-client", "2.2.0")
             version("http-client", "1.43.3")
