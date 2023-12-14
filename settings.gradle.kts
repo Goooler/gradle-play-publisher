@@ -1,3 +1,7 @@
+pluginManagement {
+    includeBuild("testapp")
+}
+
 plugins {
     `gradle-enterprise`
 }
