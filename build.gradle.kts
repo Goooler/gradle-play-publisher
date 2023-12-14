@@ -17,13 +17,6 @@ plugins {
     alias(libs.plugins.nexusPublish)
 }
 
-buildScan {
-    termsOfServiceUrl = "https://gradle.com/terms-of-service"
-    termsOfServiceAgree = "yes"
-
-    publishAlways()
-}
-
 tasks.register("configureGithubActions") {
     doLast {
         println("::set-output name=is_snapshot::$isSnapshotBuild")
