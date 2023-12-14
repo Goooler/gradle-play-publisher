@@ -20,7 +20,6 @@ buildscript {
     }
 
     dependencies {
-        classpath(kotlin("gradle-plugin", embeddedKotlinVersion))
         classpath("com.android.tools.build:gradle:8.2.0")
         classpath("com.supercilex.gradle:version-orchestrator:0.10.0")
         classpath(
@@ -28,6 +27,10 @@ buildscript {
                     file("../version.txt").readText().trim()
         )
     }
+}
+
+plugins {
+    kotlin("jvm") version embeddedKotlinVersion apply false
 }
 
 allprojects {

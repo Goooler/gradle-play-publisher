@@ -2,13 +2,8 @@ import io.github.gradlenexus.publishplugin.CloseNexusStagingRepository
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import java.time.Duration
 
-buildscript {
-    dependencies {
-        classpath(kotlin("gradle-plugin", embeddedKotlinVersion))
-    }
-}
-
 plugins {
+    kotlin("jvm") version embeddedKotlinVersion apply false
     `lifecycle-base`
     alias(libs.plugins.depUpdates)
 
