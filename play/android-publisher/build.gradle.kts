@@ -1,14 +1,13 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    `kotlin-dsl`
     `java-test-fixtures`
     `maven-publish`
     signing
 }
 
 dependencies {
-    implementation(project(":common:utils"))
+    implementation(projects.common.utils)
     implementation(libs.androidpublisher)
     implementation(libs.client.api)
     implementation(libs.client.auth)
@@ -21,17 +20,9 @@ dependencies {
 }
 
 // Mockito needs to be able to pass in null params
-tasks.named<KotlinCompile>("compileTestKotlin") {
+tasks.compileTestKotlin {
     kotlinOptions {
         freeCompilerArgs += "-Xno-call-assertions"
-    }
-}
-
-// Give testFixtures access to internal symbols
-// TODO(asaveau): remove when https://youtrack.jetbrains.com/issue/KT-34901 gets fixed
-kotlin.target.compilations {
-    named("testFixtures") {
-        associateWith(named("main").get())
     }
 }
 

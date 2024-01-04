@@ -1,5 +1,4 @@
 plugins {
-    `kotlin-dsl`
     `maven-publish`
     signing
 }

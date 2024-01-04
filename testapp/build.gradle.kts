@@ -16,9 +16,11 @@ plugins {
     id("com.github.triplet.play")
 }
 
-the<JavaPluginExtension>().toolchain.languageVersion.convention(JavaLanguageVersion.of(8))
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
+}
 
-configure<BaseAppModuleExtension> {
+android {
     namespace = "com.supercilex.test"
     compileSdk = 31
 
@@ -29,17 +31,15 @@ configure<BaseAppModuleExtension> {
         versionName = "1.0.0"
     }
 
-    signingConfigs {
-        register("release") {
-            val keystorePropertiesFile = file("keystore.properties")
-            val keystoreProperties = Properties()
-            keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+    val releaseSigning by signingConfigs.creating {
+        val keystorePropertiesFile = file("keystore.properties")
+        val keystoreProperties = Properties()
+        keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-            storeFile = file(keystoreProperties["storeFile"] as String)
-            storePassword = keystoreProperties["storePassword"] as String
-        }
+        keyAlias = keystoreProperties["keyAlias"] as String
+        keyPassword = keystoreProperties["keyPassword"] as String
+        storeFile = file(keystoreProperties["storeFile"] as String)
+        storePassword = keystoreProperties["storePassword"] as String
     }
 
     buildTypes {
@@ -54,47 +54,39 @@ configure<BaseAppModuleExtension> {
         }
 
         release {
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = releaseSigning
             isShrinkResources = true
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
         }
     }
 
-    (this as ExtensionAware).extensions.configure<
-            NamedDomainObjectContainer<PlayPublisherExtension>>("playConfigs") {
+    (this as ExtensionAware).extensions.configure<NamedDomainObjectContainer<PlayPublisherExtension>>("playConfigs") {
         register("debug") {
-            enabled.set(false)
+            enabled = false
         }
     }
 
     lint {
         abortOnError = false
     }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
 }
 
-configure<PlayPublisherExtension> {
-    serviceAccountCredentials.set(file("google-play-auto-publisher.json"))
-    defaultToAppBundles.set(true)
+play {
+    serviceAccountCredentials = file("google-play-auto-publisher.json")
+    defaultToAppBundles = true
 
-    promoteTrack.set("alpha")
-    resolutionStrategy.set(ResolutionStrategy.AUTO)
+    promoteTrack = "alpha"
+    resolutionStrategy = ResolutionStrategy.AUTO
 }
 
-configure<VersionOrchestratorExtension> {
-    configureVersionCode.set(false)
+versionOrchestrator {
+    configureVersionCode = false
 }
 
 dependencies {
-    "implementation"(kotlin("stdlib-jdk8", embeddedKotlinVersion))
-    "implementation"("androidx.appcompat:appcompat:1.6.1")
-    "implementation"("androidx.multidex:multidex:2.0.1")
-    "implementation"("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
 }
 
 abstract class BuildReadinessValidator : DefaultTask() {
@@ -119,8 +111,10 @@ abstract class BuildReadinessValidator : DefaultTask() {
     }
 }
 
-val ready = tasks.register<BuildReadinessValidator>("validateBuildReadiness") {
+val validateBuildReadiness by tasks.registering(BuildReadinessValidator::class) {
     dependsOn(gradle.includedBuild("gradle-play-publisher")
                       .task(":play:play-publisher:publishToMavenLocal"))
 }
-tasks.matching { it.name != "validateBuildReadiness" }.configureEach { dependsOn(ready) }
+tasks.matching { it.name != "validateBuildReadiness" }.configureEach {
+    dependsOn(validateBuildReadiness)
+}

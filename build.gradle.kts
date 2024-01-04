@@ -1,5 +1,6 @@
 import io.github.gradlenexus.publishplugin.CloseNexusStagingRepository
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
+import org.jetbrains.kotlin.gradle.plugin.KotlinBasePlugin
 import java.time.Duration
 
 plugins {
@@ -14,26 +15,26 @@ plugins {
 
 tasks.register("configureGithubActions") {
     doLast {
-        println("::set-output name=is_snapshot::$isSnapshotBuild")
+        logger.info("::set-output name=is_snapshot::$isSnapshotBuild")
     }
 }
 
 nexusPublishing {
     repositories {
         sonatype {
-            username.set(System.getenv("SONATYPE_NEXUS_USERNAME"))
-            password.set(System.getenv("SONATYPE_NEXUS_PASSWORD"))
+            username = System.getenv("SONATYPE_NEXUS_USERNAME")
+            password = System.getenv("SONATYPE_NEXUS_PASSWORD")
         }
     }
 
     transitionCheckOptions {
         // 15 minutes
-        delayBetween.set(Duration.ofSeconds(5))
-        maxRetries.set(180)
+        delayBetween = Duration.ofSeconds(5)
+        maxRetries = 180
     }
 }
 
-tasks.withType<CloseNexusStagingRepository> {
+tasks.withType<CloseNexusStagingRepository>().configureEach {
     mustRunAfter(allprojects.map {
         it.tasks.matching { task ->
             task.name.contains("publishToSonatype")
@@ -46,32 +47,38 @@ allprojects {
     version = versionName
     group = "com.github.triplet.gradle"
 
-    afterEvaluate {
-        extensions.findByType<JavaPluginExtension>()?.apply {
+    plugins.withType<JavaBasePlugin> {
+        extensions.configure<JavaPluginExtension>{
             toolchain.languageVersion.convention(JavaLanguageVersion.of(11))
             withJavadocJar()
             withSourcesJar()
         }
+    }
 
-        extensions.findByType<KotlinProjectExtension>()?.apply {
+    plugins.withType<KotlinBasePlugin> {
+        extensions.configure<KotlinProjectExtension> {
             sourceSets.configureEach {
                 languageSettings.progressiveMode = true
                 languageSettings.enableLanguageFeature("NewInference")
             }
         }
+    }
 
-        extensions.findByType<PublishingExtension>()?.apply {
+    plugins.withType<PublishingPlugin> {
+        extensions.configure<PublishingExtension> {
             configureMaven(repositories)
         }
+    }
 
-        extensions.findByType<SigningExtension>()?.apply {
+    plugins.withType<SigningPlugin> {
+        extensions.configure<SigningExtension> {
             isRequired = false
 
             useInMemoryPgpKeys(System.getenv("SIGNING_KEY"), System.getenv("SIGNING_PASSWORD"))
         }
     }
 
-    tasks.withType<Test> {
+    tasks.withType<Test>().configureEach {
         useJUnitPlatform()
 
         maxHeapSize = "4g"
@@ -86,6 +93,6 @@ allprojects {
     }
 
     tasks.withType<ValidatePlugins>().configureEach {
-        enableStricterValidation.set(true)
+        enableStricterValidation = true
     }
 }

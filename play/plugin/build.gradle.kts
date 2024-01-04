@@ -1,15 +1,14 @@
 plugins {
     `java-gradle-plugin`
-    `kotlin-dsl`
     `maven-publish`
     signing
     id("com.gradle.plugin-publish")
 }
 
 dependencies {
-    implementation(project(":play:android-publisher"))
-    implementation(project(":common:utils"))
-    implementation(project(":common:validation"))
+    implementation(projects.play.androidPublisher)
+    implementation(projects.common.utils)
+    implementation(projects.common.validation)
 
     compileOnly(libs.agp) // Compile only to not force a specific AGP version
     compileOnly(libs.agp.common)
@@ -18,9 +17,9 @@ dependencies {
     implementation(libs.guava)
     implementation(libs.client.gson)
 
-    testImplementation(project(":common:utils"))
-    testImplementation(project(":common:validation"))
-    testImplementation(testFixtures(project(":play:android-publisher")))
+    implementation(projects.common.utils)
+    implementation(projects.common.validation)
+    testImplementation(testFixtures(projects.play.androidPublisher))
     testImplementation(libs.agp)
 
     testImplementation(testLibs.junit)
@@ -30,9 +29,9 @@ dependencies {
 }
 
 tasks.withType<PluginUnderTestMetadata>().configureEach {
-    dependsOn("compileKotlin", "compileTestKotlin", "compileJava", "compileTestJava")
-    dependsOn("processResources", "processTestResources")
-    dependsOn(":play:android-publisher:testFixturesJar")
+    dependsOn(tasks.compileKotlin, tasks.compileTestKotlin, tasks.compileJava, tasks.compileTestJava)
+    dependsOn(tasks.processResources, tasks.processTestResources)
+    dependsOn(projects.play.androidPublisher.dependencyProject.tasks.named("testFixturesJar"))
 
     pluginClasspath.setFrom(/* reset */)
 
@@ -48,24 +47,24 @@ afterEvaluate {
     }
 }
 
-tasks.withType<Test> {
+tasks.withType<Test>().configureEach {
     inputs.files(fileTree("src/test/fixtures"))
 
     // AGP 8 requires JDK 17 and we want to to be compatible with previous JDKs
-    javaLauncher.set(javaToolchains.launcherFor {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    })
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 
     // Our integration tests need a fully compiled jar
-    dependsOn("assemble")
+    dependsOn(tasks.assemble)
 
     // Those tests also need to know which version was built
     systemProperty("VERSION_NAME", version)
 }
 
 gradlePlugin {
-    website.set("https://github.com/Triple-T/gradle-play-publisher")
-    vcsUrl.set("https://github.com/Triple-T/gradle-play-publisher")
+    website = "https://github.com/Triple-T/gradle-play-publisher"
+    vcsUrl = "https://github.com/Triple-T/gradle-play-publisher"
 
     plugins.create("play") {
         id = "com.github.triplet.play"
