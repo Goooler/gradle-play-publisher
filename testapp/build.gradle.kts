@@ -9,41 +9,12 @@ import com.supercilex.gradle.versions.VersionOrchestratorExtension
 import java.io.FileInputStream
 import java.util.*
 
-buildscript {
-    repositories {
-        mavenLocal()
-        maven("https://oss.sonatype.org/content/repositories/snapshots")
-
-        google()
-        mavenCentral()
-        maven("https://plugins.gradle.org/m2/")
-    }
-
-    dependencies {
-        classpath("com.android.tools.build:gradle:8.2.0")
-        classpath("com.supercilex.gradle:version-orchestrator:0.10.0")
-        classpath(
-            "com.github.triplet.gradle:play-publisher:" +
-                    file("../version.txt").readText().trim()
-        )
-    }
-}
-
 plugins {
-    kotlin("jvm") version embeddedKotlinVersion apply false
+    kotlin("android") version embeddedKotlinVersion
+    id("com.android.application") version "8.2.0"
+    id("com.supercilex.gradle.versions") version "0.10.0"
+    id("com.github.triplet.play")
 }
-
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
-
-apply(plugin = "com.android.application")
-apply(plugin = "kotlin-android")
-apply(plugin = "com.supercilex.gradle.versions")
-apply(plugin = "com.github.triplet.play")
 
 the<JavaPluginExtension>().toolchain.languageVersion.convention(JavaLanguageVersion.of(8))
 
